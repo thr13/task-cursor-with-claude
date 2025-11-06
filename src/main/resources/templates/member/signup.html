@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>회원가입</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                <h1 class="mb-4 text-center">회원가입</h1>
+
+                <form id="signupForm" class="needs-validation bg-white p-4 rounded shadow-sm" novalidate>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">이메일</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" required>
+                        <div class="invalid-feedback">
+                            이메일을 올바르게 입력해주세요.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">비밀번호</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                            pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$" required>
+                        <div class="invalid-feedback">
+                            비밀번호는 8자 이상 20자 이하, 영문+숫자+특수문자 포함이어야 합니다.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">이름</label>
+                        <input type="text" class="form-control" id="name" name="name" pattern=".{2,50}" required>
+                        <div class="invalid-feedback">
+                            이름을 올바르게 입력해주세요. (2~50자)
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-secondary btn-lg w-100">가입하기</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById("signupForm");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            let isValid = true;
+
+            const email = document.getElementById("email");
+            const emailValue = email.value.trim();
+            if (!emailValue || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+                email.classList.add("is-invalid");
+                isValid = false;
+            } else {
+                email.classList.remove("is-invalid");
+            }
+
+            const password = document.getElementById("password");
+            const passwordValue = password.value.trim();
+            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
+            if (!passwordPattern.test(passwordValue)) {
+                password.classList.add("is-invalid");
+                isValid = false;
+            } else {
+                password.classList.remove("is-invalid");
+            }
+
+            const name = document.getElementById("name");
+            const nameValue = name.value.trim();
+            if (nameValue.length < 2 || nameValue.length > 50) {
+                name.classList.add("is-invalid");
+                isValid = false;
+            } else {
+                name.classList.remove("is-invalid");
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            const data = {
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value,
+                name: document.getElementById("name").value
+            };
+
+            try {
+                const response = await fetch("/api/members/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("회원가입 성공!");
+                    window.location.href = "/";
+                    form.classList.remove('was-validated');
+                } else {
+                    const errorText = await response.text();
+                    alert("회원가입 실패: " + errorText);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("서버 오류 발생");
+            }
+        });
+    </script>
+</body>
+
+</html>
